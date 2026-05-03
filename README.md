@@ -1,6 +1,6 @@
 # Everlywell DBA Technical Exercise
 
-This repository is a lightweight, presentation-ready for the Everly Health AI First - Senior Database Engineer exercise. It treats the prompt like a real database change proposal: schema, query tuning, search options, monitoring as code, CI checks, and an AI-first operational layer.
+This repository is a lightweight, presentation-ready answer for the Everly Health AI First - Senior Database Engineer exercise. It treats the prompt like a real database change proposal: schema, query tuning, search options, monitoring as code, CI checks, and an AI-first operational layer.
 
 ## Motivation & Assumptions
 
@@ -12,27 +12,27 @@ This repository is a lightweight, presentation-ready for the Everly Health AI Fi
 
 ## Repo Layout
 
-- `design/` contains the exercise problem statement, solution overview, [`explain_analyze_comparison.md`](design/explain_analyze_comparison.md) (side-by-side `EXPLAIN (ANALYZE)` before/after), and a change-review process for new product-launch data model changes.
-- `db/schema.sql` mirrors the exercise table structures and constraints.
-- `db/indexes.sql` adds the concrete indexes I would recommend first.
-- `db/queries/slow_query_before.sql` and `db/queries/slow_query_after.sql` show the original query and the tuned version.
-- `db/queries/search_strategies.sql` captures three support-search strategies with tradeoffs.
-- `infra/terraform/` models an RDS PostgreSQL instance, CloudWatch alarms, and optional Datadog monitors.
-- `scripts/` includes helper checks and an `EXPLAIN` runner.
-- `ai/ai_notes.md` describes how I would bring AI into monitoring and tuning without giving it unsafe write access.
-- `.gitlab-ci.yml` and `.github/workflows/ci.yml` show how I would wire this into CI/CD.
+- [`design/`](design/) contains the exercise problem statement, solution overview, [`explain_analyze_comparison.md`](design/explain_analyze_comparison.md) (side-by-side `EXPLAIN (ANALYZE)` before/after), and a change-review process for new product-launch data model changes.
+- [`db/schema.sql`](db/schema.sql) mirrors the exercise table structures and constraints.
+- [`db/indexes.sql`](db/indexes.sql) adds the concrete indexes I would recommend first.
+- [`db/queries/slow_query_before.sql`](db/queries/slow_query_before.sql) and [`db/queries/slow_query_after.sql`](db/queries/slow_query_after.sql) show the original query and the tuned version.
+- [`db/queries/search_strategies.sql`](db/queries/search_strategies.sql) captures three support-search strategies with tradeoffs.
+- [`infra/terraform/`](infra/terraform/) models an RDS PostgreSQL instance, CloudWatch alarms, and optional Datadog monitors.
+- [`scripts/`](scripts/) includes helper checks and an `EXPLAIN` runner.
+- [`ai/ai_notes.md`](ai/ai_notes.md) describes how I would bring AI into monitoring and tuning without giving it unsafe write access.
+- [`.gitlab-ci.yml`](.gitlab-ci.yml) and [`.github/workflows/ci.yml`](.github/workflows/ci.yml) show how I would wire this into CI/CD.
 
 ## Repo Tour
 
-1. Start with `design/problem_statement.md` to map the repository back to the four exercise questions.
-2. Review `design/solution_overview.md` for the quick answer to Q1-Q4.
-3. Use `design/architecture.md` to explain the application, RDS, CloudWatch, Datadog, and future CDC/search flow.
-4. Review `db/queries/slow_query_before.sql`; the main issue is that `lower(email)` cannot use the existing plain unique index on `users(email)`.
-5. Open `db/indexes.sql` and `db/queries/slow_query_after.sql`; the fix is an expression index on `lower(email)` plus an index on the address join key.
-6. Read `design/explain_analyze_comparison.md` for representative `EXPLAIN (ANALYZE, BUFFERS)` plans that show the performance delta visually.
-7. See `db/queries/search_strategies.sql`; it covers exact lookup, trigram fuzzy search, hybrid OpenSearch (BM25 + vector), and optional `pgvector` in RDS.
-8. Review `design/change_review_process.md` for Q4; it shows how I would protect data quality, existing systems, security, and downstream consumers during a high-profile product launch.
-9. Finally see `infra/terraform/` and `ai/ai_notes.md`; monitoring, NL→SQL guardrails, and hybrid retrieval notes are part of the operating model, not an afterthought.
+1. Start with [`design/problem_statement.md`](design/problem_statement.md) to map the repository back to the four exercise questions.
+2. Review [`design/solution_overview.md`](design/solution_overview.md) for the quick answer to Q1-Q4.
+3. Use [`design/architecture.md`](design/architecture.md) to explain the application, RDS, CloudWatch, Datadog, and future CDC/search flow.
+4. Review [`db/queries/slow_query_before.sql`](db/queries/slow_query_before.sql); the main issue is that `lower(email)` cannot use the existing plain unique index on `users(email)`.
+5. Open [`db/indexes.sql`](db/indexes.sql) and [`db/queries/slow_query_after.sql`](db/queries/slow_query_after.sql); the fix is an expression index on `lower(email)` plus an index on the address join key.
+6. Read [`design/explain_analyze_comparison.md`](design/explain_analyze_comparison.md) for representative `EXPLAIN (ANALYZE, BUFFERS)` plans that show the performance delta visually.
+7. See [`db/queries/search_strategies.sql`](db/queries/search_strategies.sql); it covers exact lookup, trigram fuzzy search, hybrid OpenSearch (BM25 + vector), and optional `pgvector` in RDS.
+8. Review [`design/change_review_process.md`](design/change_review_process.md) for Q4; it shows how I would protect data quality, existing systems, security, and downstream consumers during a high-profile product launch.
+9. Finally see [`infra/terraform/`](infra/terraform/) and [`ai/ai_notes.md`](ai/ai_notes.md); monitoring, NL→SQL guardrails, and hybrid retrieval notes are part of the operating model, not an afterthought.
 
 ## In Real Life
 
@@ -54,6 +54,6 @@ For Everlywell-like workloads, I would also tag dashboards by application servic
 ./scripts/explain.sh "$DATABASE_URL" db/queries/slow_query_after.sql
 ```
 
-`explain.sh` expects a PostgreSQL connection string.
+[`scripts/explain.sh`](scripts/explain.sh) expects a PostgreSQL connection string.
 
 **Note: The repo is runnable in pieces, rather than as a full application.**
