@@ -1,6 +1,6 @@
 # Everlywell DBA Technical Exercise
 
-This repository is a lightweight, presentation-ready answer to the Everly Health AI First - Senior Database Engineer exercise. It treats the prompt like a real database change proposal: schema, query tuning, search options, monitoring as code, CI checks, and an AI-first operational layer.
+This repository is a lightweight, presentation-ready for the Everly Health AI First - Senior Database Engineer exercise. It treats the prompt like a real database change proposal: schema, query tuning, search options, monitoring as code, CI checks, and an AI-first operational layer.
 
 ## Motivation & Assumptions
 
@@ -41,7 +41,7 @@ For Everlywell-like workloads, I would also tag dashboards by application servic
 ## AI-First Opportunities
 
 - Auto-label expensive queries by fingerprint, likely root cause, affected service, and recent deployment correlation.
-- Use AI-assisted recommendations for indexes, vacuum/analyze health, parameter tuning, and query rewrites, with DBA approval gates.
+- Use AI-assisted recommendations for indexes, vacuum/analyze health, parameter tuning, and query rewrites, with approval.
 - Generate short on-call summaries from `pg_stat_statements`, slow logs, CloudWatch alarms, and Datadog incidents.
 
 ## Local Checks

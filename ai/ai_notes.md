@@ -1,6 +1,6 @@
 # AI Notes For Monitoring And Tuning
 
-AI should accelerate DBA judgment, not replace it. For an Everlywell-like platform handling sensitive health-adjacent data, I would keep AI integrations read-only by default, redact PHI/PII before analysis, and require human approval for migrations or parameter changes.
+While AI can accelerate human judgment, for an Everlywell-like platform handling sensitive health-adjacent data, I have kept AI integrations read-only by default, redact PHI/PII before analysis, and require human approval for migrations or parameter changes.
 
 ## Practical Uses
 
@@ -13,12 +13,12 @@ AI should accelerate DBA judgment, not replace it. For an Everlywell-like platfo
 
 - Do not send raw PHI/PII to external models.
 - Use read-only telemetry and sanitized schema metadata for automated analysis.
-- Require DBA approval before creating indexes, changing RDS parameters, or modifying application queries.
+- Require approval before creating indexes, changing RDS parameters, or modifying application queries.
 - Track AI suggestions as pull-request comments or tickets so decisions remain auditable.
 
 ## Example AI Workflow
 
 1. Nightly job exports sanitized `pg_stat_statements` deltas.
 2. AI groups query fingerprints by regression, service, and likely root cause.
-3. DBA reviews the top candidates and runs `EXPLAIN (ANALYZE, BUFFERS)` in staging.
-4. Approved fixes become migration PRs with CI checks and rollout notes.
+3. Human review for the top candidates and review of `EXPLAIN (ANALYZE, BUFFERS)` in staging.
+4. Approved fixes then can translate into PRs with CI checks and rollout notes.

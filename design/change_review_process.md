@@ -16,7 +16,7 @@ For new columns and tables supporting a high-profile product launch, I would use
 - Prefer explicit constraints for business rules: `NOT NULL`, `CHECK`, `UNIQUE`, foreign keys, and reference tables where appropriate.
 - Use PostgreSQL-safe rollout patterns for large tables: additive changes first, `CREATE INDEX CONCURRENTLY`, `NOT VALID` constraints followed by `VALIDATE CONSTRAINT`, and no long blocking transactions.
 - Consider future warehouse, lake, and AI usage: stable surrogate keys, clear timestamps, consistent naming, source-system fields, soft-delete semantics if needed, and audit-friendly history.
-- Run a formal schema review with DBAs, data engineering, application engineering, analytics, and security/privacy.
+- Run a formal schema review with stakeholders, viz. data, application, analytics, and security/privacy Teams.
 - Check for anti-patterns such as unbounded text without a reason, missing ownership, missing indexes for known access patterns, ambiguous booleans, overloaded JSON, weak referential integrity, or columns that encode multiple concepts.
 
 ## 3. Data Quality, Lineage, And Governance
