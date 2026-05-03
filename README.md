@@ -25,11 +25,13 @@ This repository is a lightweight, presentation-ready answer to the Everly Health
 ## Repo Tour
 
 1. Start with `design/problem_statement.md` to map the repository back to the four exercise questions.
-2. Review `db/queries/slow_query_before.sql`; the main issue is that `lower(email)` cannot use the existing plain unique index on `users(email)`.
-3. Open `db/indexes.sql` and `db/queries/slow_query_after.sql`; the fix is an expression index on `lower(email)` plus an index on the address join key.
-4. See `db/queries/search_strategies.sql`; it separates exact lookup, fuzzy human-name lookup, and future search-service architecture.
-5. Review `design/change_review_process.md` for Q4; it shows how I would protect data quality, existing systems, security, and downstream consumers during a high-profile product launch.
-6. Finally see `infra/terraform/` and `ai/ai_notes.md`; monitoring and AI are part of the operating model, not an afterthought.
+2. Review `design/solution_overview.md` for the quick answer to Q1-Q4.
+3. Use `design/architecture.md` to explain the application, RDS, CloudWatch, Datadog, and future CDC/search flow.
+4. Review `db/queries/slow_query_before.sql`; the main issue is that `lower(email)` cannot use the existing plain unique index on `users(email)`.
+5. Open `db/indexes.sql` and `db/queries/slow_query_after.sql`; the fix is an expression index on `lower(email)` plus an index on the address join key.
+6. See `db/queries/search_strategies.sql`; it separates exact lookup, fuzzy human-name lookup, and future search-service architecture.
+7. Review `design/change_review_process.md` for Q4; it shows how I would protect data quality, existing systems, security, and downstream consumers during a high-profile product launch.
+8. Finally see `infra/terraform/` and `ai/ai_notes.md`; monitoring and AI are part of the operating model, not an afterthought.
 
 ## In Real Life
 
@@ -49,5 +51,6 @@ For Everlywell-like workloads, I would also tag dashboards by application servic
 ./scripts/explain.sh "$DATABASE_URL" db/queries/slow_query_after.sql
 ```
 
-`explain.sh` expects a PostgreSQL connection string. 
-## The repo is runnable in pieces, rather than as a full application.
+`explain.sh` expects a PostgreSQL connection string.
+
+The repo is runnable in pieces, rather than as a full application.

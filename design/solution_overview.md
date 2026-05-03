@@ -4,19 +4,7 @@ Assume a health diagnostics platform like Everlywell, where customer support nee
 
 ## Architecture Sketch
 
-```text
-Application services
-        |
-        v
-AWS RDS PostgreSQL
-        |
-        +--> pg_stat_statements / slow query logs
-        +--> CloudWatch metrics and alarms
-        +--> Datadog APM, dashboards, and monitors
-
-Future option:
-RDS logical replication / CDC --> Kafka --> OpenSearch / analytics consumers
-```
+See [`architecture.md`](architecture.md) for the application, RDS PostgreSQL, CloudWatch, Datadog, and future CDC/search architecture.
 
 ## Key Recommendations
 
@@ -111,6 +99,14 @@ Then implement Strategy 3 to make the monitoring program efficient and more proa
 ## Q2: Slow Query Diagnosis
 
 The slow query filters on `lower(email)`, but the exercise schema only has a unique btree index on `users(email)`. PostgreSQL cannot use that plain index for the expression predicate, so it may scan far more of the 1M-row `users` table than necessary. After finding the user, the join also needs an index on `user_addresses(user_id)` to avoid inefficient access into a 2.5M-row address table.
+
+Core diagnosis:
+
+- The existing unique index is on `users(email)`, but the query applies `lower(email)`.
+- A normal btree index on `email` does not satisfy an expression predicate on `lower(email)`.
+- The query should qualify the column as `u.email` to avoid ambiguity as schemas evolve.
+- The `LEFT JOIN` into `user_addresses` can still be expensive unless `user_addresses(user_id)` is indexed.
+- If one user can have multiple addresses, the result size and join strategy should be checked with `EXPLAIN (ANALYZE, BUFFERS)`.
 
 Recommended fix:
 

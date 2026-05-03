@@ -1,17 +1,22 @@
 # Problem Statement
 
-The exercise asks for a DBA response to four production-style concerns:
+This repository responds to the original DBA technical exercise with version-controlled SQL, infrastructure, CI, and design notes.
 
-1. Recommend at least two strategies to monitor PostgreSQL RDS database-call performance and alert on bad-performing queries.
-2. Diagnose a query that consistently takes 10-30 seconds against about 1M `users` rows and about 2.5M `user_addresses` rows.
-3. Propose at least three strategies to support customer-support search across `first_name`, `last_name`, `email`, `phone_number`, `city`, and `zipcode`.
-4. Describe a high-level process for reviewing and implementing new columns/tables for a high-profile product launch while protecting data quality and existing integrations.
+## Original Exercise Questions
 
-This repository answers those questions with version-controlled artifacts rather than a prose-only response.
+1. For a Postgres AWS RDS database, give at least two strategies you would recommend to monitor the performance of all database calls from the application. What do you recommend using for setting up alerts to notify bad performing queries?
 
-The detailed answer for question 4 lives in `design/change_review_process.md`.
+2. Performance monitor picked the query below as taking between 10-30 seconds consistently. The `users` table has about 1 million rows and the `user_addresses` table has about 2.5 million rows. What do you think is causing this query to take this long for every execution?
 
-## Exercise Query
+3. The application engineering team gets a request from the customer support team to add searching capability for looking up users in the `users` and `user_addresses` tables. At the very least, they want to add searching by any of the following fields: `first_name`, `last_name`, `email`, `phone_number`, `city`, and `zipcode`. As the DBA, recommend at least three different strategies to support this request. Give pros and cons of each strategy. What would be your top recommendation?
+
+4. The application team has requested that several new columns and tables be added to the database in order to support a high-profile new product launch that is expected to increase users and revenue on the platform. What high-level process would you propose for reviewing and implementing those changes to ensure they are properly structured to ensure data quality and integrate reliably with existing data?
+
+## Provided Schema
+
+The schema from the exercise is captured in [`../db/schema.sql`](../db/schema.sql).
+
+## Slow Query From Exercise
 
 ```sql
 SELECT
@@ -31,9 +36,9 @@ LEFT JOIN user_addresses ua ON ua.user_id = u.id
 WHERE lower(email) = 'xyz@gmail.com';
 ```
 
-## Core Diagnosis
+## Answer Map
 
-The existing unique index is on `users(email)`, but the query filters on `lower(email)`. 
-PostgreSQL cannot use a normal btree index on `email` for that expression. Once the user is found, 
-the join to `user_addresses` also needs a supporting index on `user_addresses(user_id)` 
-so PostgreSQL can avoid scanning or inefficiently probing a multi-million-row table.
+- Q1 monitoring and alerting: [`solution_overview.md`](solution_overview.md#q1-monitoring-and-alerting), [`../infra/terraform`](../infra/terraform)
+- Q2 slow query diagnosis: [`solution_overview.md`](solution_overview.md#q2-slow-query-diagnosis), [`../db/indexes.sql`](../db/indexes.sql), [`../db/queries/slow_query_before.sql`](../db/queries/slow_query_before.sql), [`../db/queries/slow_query_after.sql`](../db/queries/slow_query_after.sql)
+- Q3 search strategies: [`solution_overview.md`](solution_overview.md#q3-search-strategy), [`../db/queries/search_strategies.sql`](../db/queries/search_strategies.sql)
+- Q4 product-launch change process: [`solution_overview.md`](solution_overview.md#q4-product-launch-schema-change-process), [`change_review_process.md`](change_review_process.md)
