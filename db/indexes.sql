@@ -17,7 +17,7 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS user_addresses_phone_idx
 CREATE INDEX CONCURRENTLY IF NOT EXISTS user_addresses_zipcode_idx
     ON user_addresses (zipcode);
 
--- Optional fuzzy-search support. Requires pg_trgm.
+-- Optional fuzzy-search support. Requires pg_trgm GIN indexes for ILIKE or similarity matching.
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS users_first_name_trgm_idx

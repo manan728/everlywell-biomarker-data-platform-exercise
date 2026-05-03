@@ -15,15 +15,15 @@ For new columns and tables supporting a high-profile product launch, I would use
 - Draft the physical schema with data types, constraints, indexes, foreign keys, partitioning considerations, default values, and nullability.
 - Prefer explicit constraints for business rules: `NOT NULL`, `CHECK`, `UNIQUE`, foreign keys, and reference tables where appropriate.
 - Use PostgreSQL-safe rollout patterns for large tables: additive changes first, `CREATE INDEX CONCURRENTLY`, `NOT VALID` constraints followed by `VALIDATE CONSTRAINT`, and no long blocking transactions.
-- Consider future warehouse, lake, and AI usage: stable surrogate keys, clear timestamps, consistent naming, source-system fields, soft-delete semantics if needed, and audit-friendly history.
+- Consider future warehouse, lake, and AI usage: stable surrogate keys, consistent naming, source-system fields, soft-delete semantics if needed, and audit-friendly history.
 - Run a formal schema review with stakeholders, viz. data, application, analytics, and security/privacy Teams.
-- Check for anti-patterns such as unbounded text without a reason, missing ownership, missing indexes for known access patterns, ambiguous booleans, overloaded JSON, weak referential integrity, or columns that encode multiple concepts.
+- Check for anti-patterns such as unbounded text, missing indexes for known access patterns, ambiguous booleans, overloaded JSON, weak referential integrity, or columns that encode multiple concepts.
 
 ## 3. Data Quality, Lineage, And Governance
 
 - Define validation rules at the database and pipeline layers: not-null expectations, range checks, allowed values, uniqueness, referential integrity, and freshness.
 - Register new tables and fields in a data catalog or lineage tool when available, including definitions, owners, sensitivity classification, and downstream consumers.
-- Add automated tests in CI, such as schema checks, migration linting, dbt-style data tests, and custom checks for expected row counts or referential integrity.
+- Add automated tests in CI, such as schema checks, linting, dbt-style data tests, and custom checks for expected row counts or referential integrity.
 - Add anomaly monitoring for sudden drops to zero rows, unexpected growth, skewed distributions, missing required values, or new error patterns.
 - Document semantics carefully so analytics, support, and future AI workflows do not infer the wrong meaning from a field name.
 
@@ -47,11 +47,7 @@ For new columns and tables supporting a high-profile product launch, I would use
 ## 6. Security, Compliance, And Auditing
 
 - Classify every new field by sensitivity and confirm encryption at rest, encryption in transit, least-privilege access, and environment-specific data handling.
-- Limit support and analytics access to the minimum required columns, especially for PHI/PII.
-- Integrate access auditing and logging requirements: who accessed what, from where, when, and through which service or role.
-- Review retention and deletion obligations before launch so the database design supports compliance operations instead of fighting them later.
+- Limit analytics access to the minimum required columns, especially for PHI/PII.
+- Integrate auditing and logging requirements: who accessed what, from where, when, and through which service or role.
+- Review retention policy before launch so the database design supports compliance operations.
 - Document decisions for HIPAA/SOC2-style audit readiness and for safe internal AI usage on sanitized or governed data.
-
-## Recommended Panel Answer
-
-My process would be: requirements and data modeling first, then formal schema review, data-quality and governance controls, backward-compatible migration rollout, performance and observability validation, and finally security/compliance signoff. The important principle is that a high-profile launch should be delivered through smaller reversible steps, with feature flags and monitoring, instead of one large schema change that risks existing users or downstream data consumers.

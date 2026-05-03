@@ -12,7 +12,7 @@ This repository is a lightweight, presentation-ready for the Everly Health AI Fi
 
 ## Repo Layout
 
-- `design/` contains the exercise framing, solution overview, and a change-review process for new product-launch data model changes.
+- `design/` contains the exercise problem statement, solution overview, and a change-review process for new product-launch data model changes.
 - `db/schema.sql` mirrors the exercise table structures and constraints.
 - `db/indexes.sql` adds the concrete indexes I would recommend first.
 - `db/queries/slow_query_before.sql` and `db/queries/slow_query_after.sql` show the original query and the tuned version.
@@ -53,4 +53,4 @@ For Everlywell-like workloads, I would also tag dashboards by application servic
 
 `explain.sh` expects a PostgreSQL connection string.
 
-The repo is runnable in pieces, rather than as a full application.
+**Note: The repo is runnable in pieces, rather than as a full application.**
