@@ -1,6 +1,6 @@
 # Everlywell DBA Technical Exercise
 
-This repository is a lightweight, presentation-ready answer to the Everly Health Senior Database Engineer exercise. Instead of a plain document, it treats the prompt like a real database change proposal: schema, query tuning, search options, monitoring as code, CI checks, and an AI-first operational layer.
+This repository is a lightweight, presentation-ready answer to the Everly Health AI First - Senior Database Engineer exercise. It treats the prompt like a real database change proposal: schema, query tuning, search options, monitoring as code, CI checks, and an AI-first operational layer.
 
 ## Motivation & Assumptions
 
@@ -22,18 +22,19 @@ This repository is a lightweight, presentation-ready answer to the Everly Health
 - `ai/ai_notes.md` describes how I would bring AI into monitoring and tuning without giving it unsafe write access.
 - `.gitlab-ci.yml` and `.github/workflows/ci.yml` show how I would wire this into CI/CD.
 
-## Narrated Tour For The Panel
+## Repo Tour
 
 1. Start with `design/problem_statement.md` to map the repository back to the four exercise questions.
 2. Review `db/queries/slow_query_before.sql`; the main issue is that `lower(email)` cannot use the existing plain unique index on `users(email)`.
 3. Open `db/indexes.sql` and `db/queries/slow_query_after.sql`; the fix is an expression index on `lower(email)` plus an index on the address join key.
-4. Walk through `db/queries/search_strategies.sql`; it separates exact lookup, fuzzy human-name lookup, and future search-service architecture.
+4. See `db/queries/search_strategies.sql`; it separates exact lookup, fuzzy human-name lookup, and future search-service architecture.
 5. Review `design/change_review_process.md` for Q4; it shows how I would protect data quality, existing systems, security, and downstream consumers during a high-profile product launch.
-6. Finish with `infra/terraform/` and `ai/ai_notes.md`; monitoring and AI are part of the operating model, not an afterthought.
+6. Finally see `infra/terraform/` and `ai/ai_notes.md`; monitoring and AI are part of the operating model, not an afterthought.
 
-## How I Would Run This In Real Life
+## In Real Life
 
-I would ship this as database migrations through GitLab CI/CD, run `EXPLAIN (ANALYZE, BUFFERS)` in a staging environment with production-like row counts, deploy indexes concurrently in production, and watch RDS metrics, `pg_stat_statements`, and Datadog APM for changes in P95/P99 latency. For Everlywell-like workloads, I would also tag dashboards by application service and query fingerprint so support, engineering, and DBA teams can discuss the same evidence.
+Ship this as database migrations through GitLab CI/CD, run `EXPLAIN (ANALYZE, BUFFERS)` in a staging environment with production-like row counts, deploy indexes concurrently in production, and watch RDS metrics, `pg_stat_statements`, and Datadog APM for changes in P95/P99 latency. 
+For Everlywell-like workloads, I would also tag dashboards by application service and query fingerprint so support, engineering, and stakeholder teams can discuss the same evidence.
 
 ## AI-First Opportunities
 
@@ -48,4 +49,5 @@ I would ship this as database migrations through GitLab CI/CD, run `EXPLAIN (ANA
 ./scripts/explain.sh "$DATABASE_URL" db/queries/slow_query_after.sql
 ```
 
-`explain.sh` expects a PostgreSQL connection string. The repo is intentionally runnable in pieces, because the purpose is to demonstrate engineering judgment rather than stand up a full application.
+`explain.sh` expects a PostgreSQL connection string. 
+## The repo is runnable in pieces, rather than as a full application.
