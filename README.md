@@ -12,7 +12,7 @@ This repository is a lightweight, presentation-ready for the Everly Health AI Fi
 
 ## Repo Layout
 
-- `design/` contains the exercise problem statement, solution overview, and a change-review process for new product-launch data model changes.
+- `design/` contains the exercise problem statement, solution overview, [`explain_analyze_comparison.md`](design/explain_analyze_comparison.md) (side-by-side `EXPLAIN (ANALYZE)` before/after), and a change-review process for new product-launch data model changes.
 - `db/schema.sql` mirrors the exercise table structures and constraints.
 - `db/indexes.sql` adds the concrete indexes I would recommend first.
 - `db/queries/slow_query_before.sql` and `db/queries/slow_query_after.sql` show the original query and the tuned version.
@@ -29,9 +29,10 @@ This repository is a lightweight, presentation-ready for the Everly Health AI Fi
 3. Use `design/architecture.md` to explain the application, RDS, CloudWatch, Datadog, and future CDC/search flow.
 4. Review `db/queries/slow_query_before.sql`; the main issue is that `lower(email)` cannot use the existing plain unique index on `users(email)`.
 5. Open `db/indexes.sql` and `db/queries/slow_query_after.sql`; the fix is an expression index on `lower(email)` plus an index on the address join key.
-6. See `db/queries/search_strategies.sql`; it separates exact lookup, fuzzy human-name lookup, and future search-service architecture.
-7. Review `design/change_review_process.md` for Q4; it shows how I would protect data quality, existing systems, security, and downstream consumers during a high-profile product launch.
-8. Finally see `infra/terraform/` and `ai/ai_notes.md`; monitoring and AI are part of the operating model, not an afterthought.
+6. Read `design/explain_analyze_comparison.md` for representative `EXPLAIN (ANALYZE, BUFFERS)` plans that show the performance delta visually.
+7. See `db/queries/search_strategies.sql`; it covers exact lookup, trigram fuzzy search, hybrid OpenSearch (BM25 + vector), and optional `pgvector` in RDS.
+8. Review `design/change_review_process.md` for Q4; it shows how I would protect data quality, existing systems, security, and downstream consumers during a high-profile product launch.
+9. Finally see `infra/terraform/` and `ai/ai_notes.md`; monitoring, NL→SQL guardrails, and hybrid retrieval notes are part of the operating model, not an afterthought.
 
 ## In Real Life
 
@@ -43,6 +44,8 @@ For Everlywell-like workloads, I would also tag dashboards by application servic
 - Auto-label expensive queries by fingerprint, likely root cause, affected service, and recent deployment correlation.
 - Use AI-assisted recommendations for indexes, vacuum/analyze health, parameter tuning, and query rewrites, with approval.
 - Generate short on-call summaries from `pg_stat_statements`, slow logs, CloudWatch alarms, and Datadog incidents.
+- **Semantic + keyword:** hybrid OpenSearch (BM25 + kNN) or `pgvector` with SQL pre-filters for AI-forward support search without sacrificing exact lookups.
+- **Guarded NL→SQL:** draft parameterized queries from natural language against a sanitized schema catalog; human + `EXPLAIN` gate before use.
 
 ## Local Checks
 

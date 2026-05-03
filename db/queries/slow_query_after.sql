@@ -1,9 +1,13 @@
--- Optimized version after adding:
---   CREATE INDEX CONCURRENTLY users_lower_email_idx ON users (lower(email));
---   CREATE INDEX CONCURRENTLY user_addresses_user_id_idx ON user_addresses (user_id);
+-- Same logical query as slow_query_before.sql after the indexes in db/indexes.sql
+-- (expression index on lower(email) and btree on user_addresses.user_id).
+-- Those indexes are what fix the plan; the original WHERE lower(email) = '...'
+-- would use them too once created.
 --
--- Longer-term option: use citext for email or store a normalized email_lower column
--- if case-insensitive email lookup is a common application contract.
+-- Edits here are optional hygiene: qualify u.email, use lower() on both sides for
+-- parameterized lookups (lower(u.email) = lower($1)), and clearer output aliases.
+--
+-- Longer-term option: citext or a normalized email_lower column if case-insensitive
+-- email is a core contract.
 
 SELECT
     u.id,

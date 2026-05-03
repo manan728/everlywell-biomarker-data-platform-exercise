@@ -12,7 +12,7 @@ See [`architecture.md`](architecture.md) for the application, RDS PostgreSQL, Cl
 | --- | --- | --- |
 | Q1: Monitoring | Combine Postgres-native telemetry, RDS/CloudWatch, Datadog APM, and AI-assisted anomaly detection | Covers database, application, and platform layers |
 | Slow query | Add `users(lower(email))` expression index and `user_addresses(user_id)` index | Matches the predicate and join pattern from the exercise query |
-| Search | Start with exact indexed lookup, add trigram/full-text only where needed, consider OpenSearch for broader support workflows | Keeps operational complexity proportional to the use case |
+| Search | Exact + trigram in Postgres first; plan **hybrid** OpenSearch (BM25 + vector) or **pgvector** for semantic retrieval when workflows need it | Matches ops cost to support UX; AI-forward path is explicit |
 | Product launches | Require data model review, migration plan, backfill plan, rollback plan, and data-quality checks | Protects existing data and reduces launch risk |
 
 ## Q1: Monitoring And Alerting
@@ -108,6 +108,8 @@ Core diagnosis:
 - The `LEFT JOIN` into `user_addresses` can still be expensive unless `user_addresses(user_id)` is indexed.
 - If one user can have multiple addresses, the result size and join strategy should be checked with `EXPLAIN (ANALYZE, BUFFERS)`.
 
+**Evidence:** See [`explain_analyze_comparison.md`](explain_analyze_comparison.md) for side-by-side representative `EXPLAIN (ANALYZE, BUFFERS)` plans (seq scan + heap probe vs index-driven nested loop) so the performance delta is visible, not only described.
+
 Recommended fix:
 
 - Add `CREATE INDEX CONCURRENTLY users_lower_email_idx ON users (lower(email));`
@@ -118,15 +120,25 @@ See `db/indexes.sql`, `db/queries/slow_query_before.sql`, and `db/queries/slow_q
 
 ## Q3: Search Strategy
 
-I would propose three options and choose based on how support actually searches.
+I would propose **at least four** tiers and choose based on how support actually searches and how “AI-forward” the product needs to be.
 
-1. Exact indexed lookup in Postgres for email, phone, and zipcode. This is simple, fast, and the best first step.
-2. Trigram or full-text search in Postgres for names and city. This helps partial matches and misspellings without adding a new service.
-3. Denormalized OpenSearch/Elasticsearch document fed by CDC for a richer support search product. This is best when search needs ranking, highlighting, typo tolerance, and cross-domain data.
+1. **Exact indexed lookup in Postgres** for email, phone, and zipcode. Simple, fast, auditable, and the right default for PHI-aware support tooling.
+2. **Trigram / full-text in Postgres** (`pg_trgm`, optional `tsvector`) for partial names and city. Good typo tolerance at the character level without a new service.
+3. **Dedicated search index (OpenSearch/Elasticsearch) fed by CDC** when you need relevance tuning, highlighting, cross-field ranking, and independent scale. For an AI-integrated platform, plan this as **hybrid search**: **BM25 (keyword)** on structured fields plus **kNN vector search** on embeddings of allowed text (e.g. concatenated name + city, not raw clinical content), merged with RRF or weighted scores. Keyword handles exact ticket numbers and zipcodes; vectors handle messy free-text.
+4. **Semantic retrieval in Postgres with `pgvector`** when you want similarity search (nicknames, noisy input, multilingual transliteration) **without** standing up a search cluster. Store embeddings only for minimized text, pre-filter on exact fields where possible, and tune IVFFlat/HNSW with realistic load tests.
 
-My top recommendation is to start with exact indexes plus targeted trigram indexes, then move to OpenSearch only when the support workflow outgrows PostgreSQL search.
+**Tradeoff summary**
 
-See `db/queries/search_strategies.sql`.
+| Strategy | Pros | Cons |
+| --- | --- | --- |
+| Exact Postgres | Lowest ops; predictable plans | Poor for fuzzy discovery |
+| Trigram / FTS in Postgres | Stays in RDS; good for names/city | Index size; ranking is manual |
+| Hybrid OpenSearch | Best relevance and scale; true hybrid keyword + semantic | CDC, security, eventual consistency |
+| pgvector in RDS | One datastore; semantic “near match” | Embedding pipeline; index tuning; governance |
+
+**Top recommendation:** Ship **(1) + (2)** immediately with clear data-minimization rules. If leadership wants an **AI-forward** support experience, charter **(3) hybrid OpenSearch** as the strategic search plane; use **(4)** when semantic retrieval is required but cluster overhead is unacceptable.
+
+See `db/queries/search_strategies.sql`. For **slow-query** plan before/after evidence, see [`explain_analyze_comparison.md`](explain_analyze_comparison.md).
 
 ## Q4: Product Launch Schema Change Process
 
@@ -146,3 +158,6 @@ The short version: high-profile launch changes should be delivered as smaller re
 - Analyze `pg_stat_statements` and slow logs with AI to cluster expensive query patterns, summarize deltas, and suggest likely missing indexes.
 - Use anomaly detection for query latency, error-rate changes, lock waits, and connection saturation after deployments.
 - Let LLMs summarize daily performance reports and incident timelines for on-call rotation, while humans verify any tuning recommendation before implementation.
+- **Natural language to SQL (guarded):** use an internal LLM with **read-only** access to a *sanitized* schema catalog (no production data) to draft support queries; enforce **human review**, row limits, and `EXPLAIN` in staging before any adoption. Never send live PHI to external models.
+- **RAG over runbooks:** retrieve internal DBA playbooks and past incidents to propose index candidates and parameter checks; treat outputs as hypotheses validated with `EXPLAIN (ANALYZE, BUFFERS)` and load tests.
+- **Hybrid retrieval product-side:** combine lexical filters (email, zip) with embedding similarity in OpenSearch or pgvector; the database still owns transactional truth—search is a **derived** view.

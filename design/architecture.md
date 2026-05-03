@@ -16,7 +16,8 @@ AWS RDS PostgreSQL
         +--> AI-assisted anomaly summaries and ticket creation
 
 Future search/analytics option:
-RDS logical replication / CDC --> Kafka --> OpenSearch / analytics consumers
+RDS logical replication / CDC --> Kafka --> OpenSearch (hybrid: BM25 + vector kNN) / analytics consumers
+Optional in-DB semantic path: RDS PostgreSQL + pgvector for smaller-scope similarity search
 ```
 
 ## Signal Flow
